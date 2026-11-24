@@ -1,0 +1,1259 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>电影之夜 Movie Night</title>
+<meta name="theme-color" content="#17121f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="电影之夜">
+<meta name="robots" content="noindex,nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="icon.png">
+<link rel="apple-touch-icon" href="icon.png">
+<style>
+:root{
+  --bg:#17121f; --bg2:#1f1829; --card:#2a2136; --card2:#342842; --line:#3d3050;
+  --text:#f8eef6; --muted:#b6a6c4; --dim:#8a7b99;
+  --pink:#ff86b8; --pink2:#ffb0d1; --peach:#ffb48a; --gold:#ffd36b; --red:#ff5d7d; --mint:#7ee2c2;
+  --r:18px; --safe-b:env(safe-area-inset-bottom,0px); --safe-t:env(safe-area-inset-top,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Noto Sans SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;min-height:100vh;overscroll-behavior-y:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+input,textarea{font:inherit;color:var(--text)}
+img{display:block}
+.hidden{display:none!important}
+
+/* header */
+.top{position:sticky;top:0;z-index:20;background:linear-gradient(var(--bg) 70%,rgba(23,18,31,.0));padding:calc(var(--safe-t) + 12px) 16px 8px}
+.brand{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.brand h1{font-size:22px;margin:0;font-weight:800;letter-spacing:.5px}
+.brand h1 span{background:linear-gradient(90deg,var(--pink),var(--peach));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sync{font-size:12px;color:var(--dim);display:flex;align-items:center;gap:6px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.dot.ok{background:var(--mint)} .dot.err{background:var(--red)} .dot.busy{background:var(--gold)}
+.search{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 12px;height:44px}
+.search input{flex:1;background:none;border:0;outline:0;font-size:16px;min-width:0}
+.search input::placeholder{color:var(--dim)}
+.search .x{color:var(--dim);font-size:18px;padding:6px}
+
+/* chips */
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 16px 4px;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;padding:7px 14px;border-radius:999px;background:var(--card);border:1px solid var(--line);font-size:14px;white-space:nowrap;transition:.15s}
+.chip.on{background:linear-gradient(135deg,var(--pink),var(--peach));color:#2a1424;border-color:transparent;font-weight:700}
+.chip.horror.on{background:linear-gradient(135deg,#ff4f75,#ff8a6b);color:#fff}
+.tools{display:flex;align-items:center;justify-content:space-between;padding:6px 16px 2px;font-size:13px;color:var(--muted)}
+.seg{display:flex;background:var(--card);border-radius:10px;padding:3px}
+.seg button{padding:4px 12px;border-radius:8px;font-size:13px;color:var(--muted)}
+.seg button.on{background:var(--card2);color:var(--text);font-weight:600}
+.toggle{display:flex;align-items:center;gap:6px}
+.toggle i{width:34px;height:20px;border-radius:20px;background:var(--card2);position:relative;transition:.2s}
+.toggle i::after{content:"";position:absolute;left:2px;top:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.2s}
+.toggle.on i{background:var(--pink)} .toggle.on i::after{left:16px}
+
+/* sections */
+main{padding-bottom:calc(84px + var(--safe-b))}
+.sec{padding:8px 16px}
+.sec h2{font-size:18px;margin:14px 0 10px;display:flex;align-items:center;justify-content:space-between}
+.sec h2 small{font-size:13px;color:var(--muted);font-weight:400}
+.link{color:var(--pink2);font-size:13px;font-weight:500}
+.empty{text-align:center;color:var(--muted);padding:40px 20px}
+.empty .big{font-size:46px;margin-bottom:8px}
+
+/* grid + cards */
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px;padding:8px 16px;align-items:start}
+.card{align-self:start}
+button.card{display:flex;flex-direction:column;justify-content:flex-start}
+@media(min-width:560px){.grid{grid-template-columns:repeat(4,1fr)}}
+@media(min-width:820px){.grid{grid-template-columns:repeat(6,1fr)}}
+.card{text-align:left;display:block;width:100%;min-width:0}
+.poster{position:relative;aspect-ratio:2/3;border-radius:14px;overflow:hidden;background:linear-gradient(160deg,var(--card2),var(--card));box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.poster img{width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .3s}
+.poster img.ld{opacity:1}
+.noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px;font-size:13px;color:var(--muted)}
+.badge{position:absolute;font-size:11px;font-weight:700;border-radius:999px;padding:2px 7px;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px)}
+.badge.seen{left:6px;top:6px;background:rgba(255,211,107,.92);color:#3a2a00}
+.badge.heart{right:6px;top:6px;background:rgba(255,134,184,.9);padding:2px 5px}
+.score{position:absolute;right:6px;bottom:6px;font-size:11px;font-weight:700;background:rgba(0,0,0,.6);border-radius:8px;padding:1px 6px;color:var(--gold)}
+.match{position:absolute;left:6px;bottom:6px;font-size:11px;font-weight:800;background:linear-gradient(135deg,var(--pink),var(--peach));color:#2a1424;border-radius:8px;padding:1px 6px}
+.t1{font-size:13.5px;font-weight:600;margin-top:7px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;line-height:1.3}
+.t2{font-size:11.5px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px}
+.t3{font-size:11px;color:var(--dim)}
+.row{display:flex;gap:10px;overflow-x:auto;padding:4px 16px 8px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.row::-webkit-scrollbar{display:none}
+.row .card{flex:none;width:112px;scroll-snap-align:start}
+.sentinel{height:40px}
+.spin{width:28px;height:28px;border-radius:50%;border:3px solid var(--card2);border-top-color:var(--pink);animation:sp 0.8s linear infinite;margin:24px auto}
+@keyframes sp{to{transform:rotate(360deg)}}
+.skel{aspect-ratio:2/3;border-radius:14px;background:linear-gradient(90deg,var(--card) 0,var(--card2) 50%,var(--card) 100%);background-size:200% 100%;animation:sk 1.2s infinite}
+@keyframes sk{to{background-position:-200% 0}}
+
+/* rec list */
+.rec{display:flex;gap:12px;padding:10px;background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);margin-bottom:12px;text-align:left;width:100%}
+.rec .poster{width:96px;flex:none}
+.rec .info{flex:1;min-width:0;display:flex;flex-direction:column}
+.rec .t1{font-size:16px;margin-top:0}
+.rec .why{margin-top:6px;display:flex;flex-wrap:wrap;gap:5px}
+.why span{font-size:11.5px;background:rgba(255,134,184,.14);color:var(--pink2);border-radius:8px;padding:2px 8px}
+.rec .ov{font-size:12.5px;color:var(--muted);margin-top:6px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.rec .acts{margin-top:auto;padding-top:8px;display:flex;gap:6px}
+.mini{white-space:nowrap;font-size:12px;border-radius:10px;padding:5px 10px;background:var(--card);border:1px solid var(--line)}
+.mini.on{background:rgba(255,134,184,.2);border-color:var(--pink);color:var(--pink2)}
+.pct{font-weight:800;color:var(--peach)}
+
+/* taste */
+.taste{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;margin:6px 0 12px}
+.taste .lbl{font-size:12px;color:var(--dim);margin:8px 0 5px}
+.taste .lbl:first-child{margin-top:0}
+.tags{display:flex;flex-wrap:wrap;gap:6px}
+.tag{font-size:12.5px;padding:3px 10px;border-radius:999px;background:var(--card);border:1px solid var(--line)}
+.tag.neg{opacity:.65;text-decoration:line-through}
+
+/* quick rate */
+.qr{display:grid;grid-template-columns:repeat(3,1fr);gap:14px 10px;padding:4px 16px;align-items:start}
+@media(min-width:560px){.qr{grid-template-columns:repeat(4,1fr)}}
+.qr .item .stars{justify-content:center;margin-top:6px}
+.qr .item .stars button{font-size:19px;padding:0}
+.qr .item .stars{gap:0}
+.skip{display:block;margin:4px auto 0;font-size:12px;color:var(--dim);padding:4px 10px}
+.qr .item.done{opacity:.4}
+
+/* stars */
+.stars{display:flex;gap:2px}
+.stars button{font-size:30px;line-height:1;color:var(--card2);transition:transform .12s;padding:0 2px}
+.stars button.on{color:var(--gold);text-shadow:0 0 12px rgba(255,211,107,.35)}
+.stars button:active{transform:scale(1.25)}
+
+/* bottom nav */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;display:flex;background:rgba(31,24,41,.92);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:6px 8px calc(6px + var(--safe-b))}
+nav.tabs button{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;font-size:11px;color:var(--dim);padding:4px 0;position:relative}
+nav.tabs button .ic{font-size:22px;filter:grayscale(1) opacity(.6);transition:.2s}
+nav.tabs button.on{color:var(--pink2);font-weight:600}
+nav.tabs button.on .ic{filter:none;transform:translateY(-1px) scale(1.08)}
+nav.tabs .cnt{position:absolute;top:0;left:calc(50% + 8px);background:var(--pink);color:#2a1424;font-size:10px;font-weight:800;border-radius:999px;padding:0 5px;min-width:16px}
+
+/* sheet */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(8,5,12,.6);opacity:0;transition:opacity .25s;backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px)}
+.overlay.show{opacity:1}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:51;max-height:93vh;overflow-y:auto;background:var(--bg2);border-radius:24px 24px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.8,.2,1);padding-bottom:calc(20px + var(--safe-b));max-width:720px;margin:0 auto;overscroll-behavior:contain}
+.sheet.show{transform:none}
+.grab{position:sticky;top:0;z-index:3;display:flex;justify-content:center;padding:8px 0}
+.grab i{width:40px;height:5px;border-radius:5px;background:rgba(255,255,255,.35)}
+.close{position:absolute;right:12px;top:12px;z-index:4;width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.5);font-size:18px;display:flex;align-items:center;justify-content:center}
+.hero{position:relative;margin-top:-21px;height:210px;overflow:hidden;border-radius:24px 24px 0 0}
+.hero img{width:100%;height:100%;object-fit:cover}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(transparent 30%,var(--bg2))}
+.dhead{display:flex;gap:14px;padding:0 16px;margin-top:-90px;position:relative;z-index:2}
+.dhead .poster{width:110px;flex:none}
+.dhead .ttl{align-self:flex-end;min-width:0}
+.dhead h3{font-size:21px;margin:0;line-height:1.25}
+.dhead .en{color:var(--muted);font-size:14px;margin-top:2px}
+.meta{font-size:12.5px;color:var(--muted);margin-top:6px}
+.gtags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.gtags span{font-size:11.5px;border-radius:8px;padding:1px 8px;background:var(--card)}
+.dbody{padding:14px 16px 0}
+.box{background:var(--card);border-radius:var(--r);padding:14px;margin-bottom:12px}
+.box h4{margin:0 0 8px;font-size:14px;color:var(--muted);font-weight:600;display:flex;justify-content:space-between;align-items:center}
+.rate-row{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.btns{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.bigbtn{border-radius:16px;padding:13px 8px;font-weight:700;font-size:15px;background:var(--card);border:1.5px solid var(--line);display:flex;align-items:center;justify-content:center;gap:6px}
+.bigbtn.on.seen{background:rgba(255,211,107,.16);border-color:var(--gold);color:var(--gold)}
+.bigbtn.on.tog{background:rgba(255,134,184,.18);border-color:var(--pink);color:var(--pink2)}
+.ovtxt{font-size:14.5px;line-height:1.65;color:#e9dcea}
+.people{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none}
+.people::-webkit-scrollbar{display:none}
+.person{flex:none;width:68px;text-align:center;font-size:11px;color:var(--muted)}
+.person .ph{width:60px;height:60px;border-radius:50%;margin:0 auto 4px;background:var(--card2) center/cover;display:flex;align-items:center;justify-content:center;font-size:20px}
+.person b{display:block;color:var(--text);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prov{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.prov img{width:38px;height:38px;border-radius:10px}
+.trailer{display:flex;align-items:center;justify-content:center;gap:6px;border-radius:14px;padding:11px;background:#ff3b5c22;color:#ff8aa0;font-weight:700;text-decoration:none;margin-bottom:12px;border:1px solid #ff3b5c55}
+.tiny{font-size:11px;color:var(--dim)}
+
+/* toast */
+.toast{position:fixed;left:50%;bottom:calc(92px + var(--safe-b));transform:translateX(-50%) translateY(20px);background:#fff;color:#2a1424;font-weight:700;font-size:14px;padding:10px 18px;border-radius:999px;opacity:0;transition:.25s;z-index:60;pointer-events:none;white-space:nowrap;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+/* me */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:6px 0 4px}
+.stat{background:var(--bg2);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+.stat b{display:block;font-size:22px;background:linear-gradient(90deg,var(--pink),var(--peach));-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat span{font-size:12px;color:var(--muted)}
+.settings{background:var(--bg2);border:1px solid var(--line);border-radius:var(--r);padding:4px 14px;margin:8px 0}
+.settings button,.settings .li{display:flex;justify-content:space-between;width:100%;padding:13px 0;border-bottom:1px solid var(--line);font-size:14px;text-align:left}
+.settings > :last-child{border-bottom:0}
+.foot{padding:16px;text-align:center;font-size:11px;color:var(--dim)}
+.foot img{height:12px;display:inline-block;vertical-align:middle;margin-left:4px}
+
+/* setup */
+.setup{max-width:560px;margin:0 auto;padding:calc(var(--safe-t) + 24px) 18px 60px}
+.setup h1{font-size:26px;margin:0 0 4px}
+.setup p{color:var(--muted);margin:6px 0}
+.setup label{display:block;font-weight:700;margin:20px 0 6px}
+.setup input,.setup textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:15px;outline:0}
+.setup textarea{min-height:110px;font-family:ui-monospace,Menlo,monospace;font-size:12.5px}
+.setup .go{margin-top:22px;width:100%;padding:14px;border-radius:14px;background:linear-gradient(135deg,var(--pink),var(--peach));color:#2a1424;font-weight:800;font-size:16px}
+.setup .msg{margin-top:14px;padding:12px;border-radius:12px;font-size:14px}
+.msg.err{background:#ff5d7d22;color:#ffb3c2}
+.msg.ok{background:#7ee2c222;color:#b9f5e2}
+.share{word-break:break-all;font-size:12px;background:var(--card);border-radius:12px;padding:12px;margin-top:10px;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<!-- ============ SETUP (only for the person setting it up) ============ -->
+<div id="setup" class="setup hidden">
+  <h1>🍿 Movie Night setup</h1>
+  <p>One-time setup. Do this once on your phone or computer, then send the link it makes to your wife.</p>
+
+  <label for="tk">1. TMDB key (“API Read Access Token” or “API Key”)</label>
+  <input id="tk" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="eyJhbGciOi... or 32 letters/numbers">
+
+  <label for="fb">2. Pantry ID (from getpantry.cloud)</label>
+  <textarea id="fb" autocomplete="off" autocapitalize="off" spellcheck="false" style="min-height:60px" placeholder="xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"></textarea>
+  <p class="tiny">This is what lets you both see the same ratings and list. You can leave it empty to try the site first; then nothing is shared.</p>
+
+  <button class="go" id="saveSetup">Test &amp; save</button>
+  <div id="setupMsg"></div>
+  <div id="setupDone" class="hidden">
+    <label>3. Send this link to your wife 💌</label>
+    <p>Anyone with this link can see and change your list, so only send it to her.</p>
+    <div class="share" id="shareLink"></div>
+    <button class="go" id="copyLink">Copy link</button>
+    <button class="go" id="openApp" style="background:var(--card);color:var(--text)">Open the site</button>
+  </div>
+</div>
+
+<!-- ============ APP ============ -->
+<div id="app" class="hidden">
+  <div class="top">
+    <div class="brand">
+      <h1>🍿 <span>电影之夜</span></h1>
+      <div class="sync" id="sync"><i class="dot" id="syncDot"></i><span id="syncTxt"></span></div>
+    </div>
+    <div class="search" id="searchBox">
+      <span>🔍</span>
+      <input id="q" type="search" enterkeyhint="search" placeholder="搜电影名 / Search movies">
+      <button class="x hidden" id="qx" aria-label="清除">✕</button>
+    </div>
+  </div>
+
+  <main>
+    <!-- HOME -->
+    <section id="v-home">
+      <div id="homeBrowse">
+        <div class="chips" id="chips"></div>
+        <div class="tools">
+          <div class="seg" id="sortSeg"><button data-s="pop" class="on">🔥 热门</button><button data-s="top">⭐ 高分</button></div>
+          <button class="toggle" id="hideSeen"><i></i>隐藏看过的</button>
+        </div>
+        <div id="homeRecs"></div>
+        <div class="sec" style="padding-bottom:0"><h2 id="gridTitle" style="margin-bottom:0"></h2></div>
+        <div class="grid" id="grid"></div>
+        <div class="sentinel" id="sentinel"></div>
+      </div>
+      <div id="searchRes" class="hidden">
+        <div class="grid" id="sgrid"></div>
+      </div>
+    </section>
+
+    <!-- FOR YOU -->
+    <section id="v-recs" class="hidden"><div class="sec" id="recsBody"></div></section>
+
+    <!-- TOGETHER -->
+    <section id="v-tog" class="hidden"><div class="sec" id="togBody"></div></section>
+
+    <!-- ME -->
+    <section id="v-me" class="hidden"><div class="sec" id="meBody"></div></section>
+
+    <div class="foot">
+      电影资料来自 TMDB · This product uses the TMDB API but is not endorsed or certified by TMDB.<br>
+      观看平台资料来自 JustWatch
+    </div>
+  </main>
+
+  <nav class="tabs" id="tabs">
+    <button data-v="home" class="on"><span class="ic">🎬</span>发现</button>
+    <button data-v="recs"><span class="ic">✨</span>为你推荐</button>
+    <button data-v="tog"><span class="ic">💕</span>一起看<span class="cnt hidden" id="togCnt"></span></button>
+    <button data-v="me"><span class="ic">⭐</span>我的</button>
+  </nav>
+</div>
+
+<div class="overlay hidden" id="overlay"></div>
+<div class="sheet hidden" id="sheet" role="dialog" aria-modal="true"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+'use strict';
+/* =====================================================================
+   Small helpers
+   ===================================================================== */
+const $ = (s, el = document) => el.querySelector(s);
+const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const isoDay = d => d.toISOString().slice(0, 10);
+const daysAgo = n => new Date(Date.now() - n * 864e5);
+const TODAY = isoDay(new Date());
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) {
+    const s = JSON.stringify(v);
+    try { localStorage.setItem(k, s); return true; }
+    catch {
+      // storage full: throw away the oldest half of the movie cache, then try once more
+      try {
+        const keys = Object.keys(localStorage).filter(x => x.startsWith('c:'));
+        keys.sort((a, b) => (LS.get(a, {}).at || 0) - (LS.get(b, {}).at || 0));
+        keys.slice(0, Math.ceil(keys.length / 2) + 1).forEach(x => localStorage.removeItem(x));
+        localStorage.setItem(k, s); return true;
+      } catch { return false; }
+    }
+  },
+  del(k) { try { localStorage.removeItem(k); } catch {} }
+};
+function b64e(o) { return btoa(unescape(encodeURIComponent(JSON.stringify(o)))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); }
+function b64d(s) { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; return JSON.parse(decodeURIComponent(escape(atob(s)))); }
+function randCode() { const a = new Uint8Array(18); crypto.getRandomValues(a); return btoa(String.fromCharCode(...a)).replace(/\+/g, '-').replace(/\//g, '_'); }
+async function pool(tasks, n) {
+  const out = []; let i = 0;
+  await Promise.all(Array.from({length: Math.min(n, tasks.length)}, async () => {
+    while (i < tasks.length) { const k = i++; try { out[k] = await tasks[k](); } catch (e) { out[k] = null; } }
+  }));
+  return out;
+}
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 1800); }
+
+/* =====================================================================
+   Names in Chinese
+   ===================================================================== */
+const GENRES = {28:'动作',12:'冒险',16:'动画',35:'喜剧',80:'犯罪',99:'纪录',18:'剧情',10751:'家庭',14:'奇幻',36:'历史',27:'恐怖',10402:'音乐',9648:'悬疑',10749:'爱情',878:'科幻',10770:'电视电影',53:'惊悚',10752:'战争',37:'西部'};
+let regionDN, langDN;
+try { regionDN = new Intl.DisplayNames(['zh-CN'], {type: 'region'}); langDN = new Intl.DisplayNames(['zh-CN'], {type: 'language'}); } catch {}
+const LANG_FIX = {cn: '粤语', zh: '华语', ko: '韩语', ja: '日语', en: '英语', th: '泰语', es: '西班牙语', fr: '法语', hi: '印地语'};
+const countryName = c => { try { return regionDN ? regionDN.of(c) : c; } catch { return c; } };
+const langName = l => LANG_FIX[l] || (() => { try { return langDN ? langDN.of(l) : l; } catch { return l; } })();
+const LANG_FILM = {ko:'韩国', zh:'华语', cn:'粤语', ja:'日本', th:'泰国', en:'英语', es:'西班牙语', fr:'法国', hi:'印度', id:'印尼'};
+
+/* =====================================================================
+   Settings (kept in the link, so the link itself is the key)
+   ===================================================================== */
+let cfg = null;
+function initCfg() {
+  const m = location.hash.match(/s=([A-Za-z0-9_-]+)/);
+  if (m) { try { const c = b64d(m[1]); if (c && c.t && c.c) { cfg = c; LS.set('mn_cfg', c); } } catch {} }
+  if (!cfg) cfg = LS.get('mn_cfg', null);
+  // keep the settings in the address so "Add to Home Screen" works too
+  if (cfg && !m) history.replaceState(null, '', location.pathname + location.search + '#s=' + b64e(cfg));
+}
+const shareLink = () => location.origin + location.pathname + '#s=' + b64e(cfg);
+
+/* =====================================================================
+   Movie database (TMDB)
+   ===================================================================== */
+const TMDB = 'https://api.themoviedb.org/3';
+const IMG = 'https://image.tmdb.org/t/p/';
+const mem = new Map();
+const known = new Map();   // every movie we've seen this session, for instant open
+
+async function tget(path, params = {}, key = cfg && cfg.t) {
+  const p = new URLSearchParams(params);
+  const bearer = key.length > 40;
+  const memKey = path + '?' + p;
+  if (mem.has(memKey)) return mem.get(memKey);
+  if (!bearer) p.set('api_key', key);
+  const pr = (async () => {
+    for (let tries = 0; ; tries++) {
+      const r = await fetch(TMDB + path + '?' + p, {headers: bearer ? {Authorization: 'Bearer ' + key} : {}});
+      if (r.status === 429 && tries < 4) { await sleep(800 * (tries + 1)); continue; }
+      if (!r.ok) throw new Error('tmdb ' + r.status);
+      return r.json();
+    }
+  })();
+  mem.set(memKey, pr);
+  try { return await pr; } catch (e) { mem.delete(memKey); throw e; }
+}
+async function cached(key, ttl, fn) {
+  const c = LS.get('c:' + key, null);
+  if (c && Date.now() - c.at < ttl) return c.d;
+  const d = await fn();
+  LS.set('c:' + key, {at: Date.now(), d});
+  return d;
+}
+const CJK = /[㐀-鿿]/;
+function norm(zh, en) {
+  const z = zh || en, e = en || zh;
+  let et = e.title || '';
+  if (CJK.test(et) && e.original_title && !CJK.test(e.original_title)) et = e.original_title;
+  const zt = zh && CJK.test(zh.title || '') ? zh.title : null;
+  const m = {
+    id: z.id, zh: zt && zt !== et ? zt : null, en: et,
+    p: z.poster_path || e.poster_path || '', b: z.backdrop_path || e.backdrop_path || '',
+    d: z.release_date || e.release_date || '',
+    g: z.genre_ids || (z.genres || []).map(x => x.id),
+    l: z.original_language || '', va: z.vote_average || 0, vc: z.vote_count || 0, pop: z.popularity || 0,
+    ov: (zh && zh.overview) || (en && en.overview) || ''
+  };
+  known.set(m.id, Object.assign(known.get(m.id) || {}, m));
+  return m;
+}
+// Fetch a list in Chinese AND English at once, so we can show both titles.
+async function bilist(path, params = {}, ttlH = 6) {
+  const r = await cached('L:' + path + JSON.stringify(params), ttlH * 3600e3, async () => {
+    const [a, b] = await Promise.all([tget(path, {...params, language: 'zh-CN'}), tget(path, {...params, language: 'en-US'})]);
+    const em = new Map((b.results || []).map(x => [x.id, x]));
+    return {page: a.page || 1, total: a.total_pages || 1,
+      results: (a.results || []).filter(x => !x.adult).map(x => norm(x, em.get(x.id)))};
+  });
+  r.results.forEach(m => known.set(m.id, Object.assign(known.get(m.id) || {}, m)));
+  return r;
+}
+// Full movie info (cast, director, keywords, trailer, where to watch)
+async function details(id) {
+  const m = await cached('D:' + id, 7 * 864e5, async () => {
+    const [z, e] = await Promise.all([
+      tget(`/movie/${id}`, {language: 'zh-CN', append_to_response: 'credits,keywords,videos,watch/providers', include_video_language: 'zh,en,null'}),
+      tget(`/movie/${id}`, {language: 'en-US'})
+    ]);
+    const m = norm(z, e);
+    m.g = (z.genres || []).map(x => x.id);
+    m.rt = z.runtime || 0;
+    m.c = [...new Set([...(z.origin_country || []), ...(z.production_countries || []).map(x => x.iso_3166_1)])].slice(0, 3);
+    m.dir = (z.credits?.crew || []).filter(x => x.job === 'Director').slice(0, 2).map(x => [x.id, x.name]);
+    m.cast = (z.credits?.cast || []).slice(0, 10).map(x => [x.id, x.name, x.profile_path || '']);
+    m.kw = (z.keywords?.keywords || []).slice(0, 20).map(x => x.id);
+    m.col = z.belongs_to_collection?.id || 0;
+    const vids = (z.videos?.results || []).filter(v => v.site === 'YouTube');
+    const tr = vids.find(v => v.type === 'Trailer' && v.iso_639_1 === 'zh') || vids.find(v => v.type === 'Trailer') || vids[0];
+    m.tr = tr ? tr.key : '';
+    const pr = z['watch/providers']?.results?.US || z['watch/providers']?.results?.PR || null;
+    m.prov = pr ? {link: pr.link || '', f: (pr.flatrate || []).slice(0, 6).map(x => [x.provider_name, x.logo_path]),
+      r: (pr.rent || []).slice(0, 4).map(x => [x.provider_name, x.logo_path])} : null;
+    m.tag = z.tagline || '';
+    return m;
+  });
+  known.set(m.id, Object.assign(known.get(m.id) || {}, m));
+  return m;
+}
+// small summary saved with each rating, used to learn her taste
+const metaOf = m => ({zh: m.zh, en: m.en, p: m.p, d: m.d, g: m.g, c: m.c, l: m.l,
+  dir: m.dir, cast: (m.cast || []).slice(0, 6).map(x => [x[0], x[1]]), kw: m.kw, col: m.col, va: m.va, vc: m.vc});
+
+/* =====================================================================
+   Our shared list (saved online in Firebase so both phones match)
+   ===================================================================== */
+let items = {};
+let pending = new Set();
+let flushing = false;
+const fsBase = () => `https://firestore.googleapis.com/v1/projects/${encodeURIComponent(cfg.f.p)}/databases/(default)/documents/couples/${cfg.c}`;
+async function fsPut(path, obj) {
+  const r = await fetch(`${fsBase()}/${path}?key=${encodeURIComponent(cfg.f.k)}`, {
+    method: 'PATCH', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({fields: {j: {stringValue: JSON.stringify(obj)}, u: {integerValue: String(obj.t || Date.now())}}})
+  });
+  if (!r.ok) throw new Error('save ' + r.status + ' ' + (await r.text()).slice(0, 200));
+}
+async function fsList() {
+  const out = []; let tok = '';
+  do {
+    const r = await fetch(`${fsBase()}/items?pageSize=300&key=${encodeURIComponent(cfg.f.k)}${tok ? '&pageToken=' + encodeURIComponent(tok) : ''}`);
+    if (!r.ok) throw new Error('load ' + r.status);
+    const d = await r.json();
+    for (const doc of d.documents || []) { try { out.push(JSON.parse(doc.fields.j.stringValue)); } catch {} }
+    tok = d.nextPageToken || '';
+  } while (tok);
+  return out;
+}
+/* Pantry (getpantry.cloud): the simple option, needs only a "Pantry ID" */
+const ptBase = () => `https://getpantry.cloud/apiv1/pantry/${encodeURIComponent(cfg.p)}/basket/mn_${cfg.c}`;
+async function ptFetch(method, body) {
+  for (let tries = 0; ; tries++) {
+    const r = await fetch(ptBase(), {method, headers: {'Content-Type': 'application/json'}, body: body ? JSON.stringify(body) : undefined});
+    if (r.status === 429 && tries < 4) { await sleep(1500 * (tries + 1)); continue; }
+    return r;
+  }
+}
+async function ptGet() {
+  const r = await ptFetch('GET');
+  if (r.status === 400) return null;          // box doesn't exist yet
+  if (!r.ok) throw new Error('load ' + r.status);
+  const d = await r.json(); const out = [];
+  for (const k in d.items || {}) { try { out.push(JSON.parse(d.items[k])); } catch {} }
+  return out;
+}
+async function ptPut(list) {
+  const body = {items: {}};
+  list.forEach(it => body.items[it.id] = JSON.stringify(it));   // stored as text so nothing gets mixed up
+  let r = await ptFetch('PUT', body);
+  if (r.status === 400) { const g = await ptFetch('GET'); if (g.status === 400) r = await ptFetch('POST', body); } // first time: create the box (only if it really doesn't exist)
+  if (!r.ok) throw new Error('save ' + r.status + ' ' + (await r.text()).slice(0, 200));
+}
+const hasCloud = () => !!(cfg && (cfg.f || cfg.p));
+async function cloudList() {
+  if (cfg.p) {
+    const l = await ptGet();
+    if (l === null) { Object.keys(items).forEach(id => pending.add(id)); return []; } // box lost? re-upload from this phone
+    return l;
+  }
+  return fsList();
+}
+async function cloudSave(ids) {
+  const list = ids.map(id => items[id]).filter(Boolean);
+  if (cfg.p) { if (list.length) await ptPut(list); return; }
+  for (const it of list) await fsPut('items/' + it.id, it);
+}
+function setSync(s) {
+  const dot = $('#syncDot'), t = $('#syncTxt');
+  if (!dot) return;
+  dot.className = 'dot ' + s;
+  t.textContent = !hasCloud() ? '仅本机' : s === 'ok' ? '已同步' : s === 'busy' ? '同步中' : s === 'err' ? '离线' : '';
+}
+function saveLocal() { LS.set('mn_items', items); LS.set('mn_pending', [...pending]); }
+async function flush() {
+  if (!hasCloud() || flushing || !pending.size) return;
+  flushing = true; setSync('busy');
+  try {
+    const ids = [...pending], ts = ids.map(id => (items[id] || {}).t);
+    await cloudSave(ids);
+    ids.forEach((id, i) => { if ((items[id] || {}).t === ts[i]) pending.delete(id); }); saveLocal();
+    setSync('ok');
+  } catch (e) { console.warn(e); setSync('err'); setTimeout(flush, 15000); }
+  finally { flushing = false; if (pending.size && navigator.onLine) setTimeout(flush, 500); }
+}
+let lastPull = 0;
+async function pull(force) {
+  if (!hasCloud() || (!force && Date.now() - lastPull < 8000)) return;
+  lastPull = Date.now();
+  try {
+    const rem = await cloudList(); let changed = false;
+    const remIds = new Set(rem.map(r => r && String(r.id)));
+    Object.keys(items).forEach(id => { if (!remIds.has(id)) pending.add(id); }); // anything missing online gets re-uploaded
+    for (const r of rem) {
+      if (!r || !r.id || pending.has(String(r.id))) continue;
+      const l = items[r.id];
+      if (!l || (r.t || 0) > (l.t || 0)) { items[r.id] = r; changed = true; }
+    }
+    if (changed) refreshAll();
+    saveLocal();
+    setSync(pending.size ? 'busy' : 'ok');
+    if (pending.size) flush();
+  } catch (e) { console.warn(e); setSync('err'); }
+}
+async function setItem(id, patch, srcMovie) {
+  id = String(id);
+  const it = items[id] || {id};
+  Object.assign(it, patch);
+  it.t = Date.now();
+  items[id] = it;
+  pending.add(id); saveLocal(); refreshAll();
+  if (!it.m) {
+    try { it.m = metaOf(await details(id)); }
+    catch { const k = srcMovie || known.get(+id); if (k) it.m = metaOf(k); }
+    saveLocal();
+  }
+  flush();
+}
+const itemOf = id => items[String(id)];
+
+/* =====================================================================
+   THE RECOMMENDER
+   Learns from every star rating (and "seen", "want to watch together",
+   "not interested"), then scores hundreds of candidate movies.
+   ===================================================================== */
+// how much each kind of clue matters, and how much proof we need before trusting it
+const FAM = {
+  g:  {w: 1.00, k: 3},   // genre
+  k:  {w: 0.75, k: 2},   // TMDB keywords (e.g. "haunted house", "zombie", "possession")
+  d:  {w: 1.10, k: 1},   // director
+  a:  {w: 0.60, k: 1.5}, // actors
+  c:  {w: 0.70, k: 2},   // country
+  l:  {w: 0.70, k: 2},   // original language
+  y:  {w: 0.30, k: 3},   // decade
+  col:{w: 0.90, k: 1}    // same series (sequels)
+};
+function feats(m) {
+  const f = [];
+  (m.g || []).forEach(x => f.push('g:' + x));
+  (m.kw || []).forEach(x => f.push('k:' + x));
+  (m.dir || []).forEach(x => f.push('d:' + x[0]));
+  (m.cast || []).slice(0, 6).forEach(x => f.push('a:' + x[0]));
+  (m.c || []).slice(0, 2).forEach(x => f.push('c:' + x));
+  if (m.l) f.push('l:' + m.l);
+  if (m.d) f.push('y:' + m.d.slice(0, 3));
+  if (m.col) f.push('col:' + m.col);
+  return f;
+}
+const famOf = f => f.slice(0, f.indexOf(':'));
+function signal(it, mu) {
+  if (it.x) return -1.3;                                     // "not interested"
+  if (it.s && it.r) { const v = it.r - mu; return v > 0 ? v : v * 1.2; } // dislikes count a little more
+  if (it.s) return 0.25;                                     // watched, no stars
+  if (it.w) return 0.6;                                      // saved to watch together
+  return 0;
+}
+function profile() {
+  const list = Object.values(items).filter(i => i.m && (i.s || i.w || i.x));
+  const rated = list.filter(i => i.s && i.r);
+  // her personal average (pulled toward 3.3 until there's enough data), so a "3" from a harsh rater still counts as OK
+  const mu = (rated.reduce((a, i) => a + i.r, 0) + 3.3 * 3) / (rated.length + 3);
+  const S = {}, N = {}, names = {};
+  for (const it of list) {
+    const ageDays = (Date.now() - (it.st || it.t || Date.now())) / 864e5;
+    const v = signal(it, mu) * (0.6 + 0.4 * Math.exp(-ageDays / 240)); // recent taste matters a bit more
+    it._v = v;
+    if (!v) continue;
+    for (const f of feats(it.m)) { S[f] = (S[f] || 0) + v; N[f] = (N[f] || 0) + 1; }
+    (it.m.dir || []).forEach(x => names['d:' + x[0]] = x[1]);
+    (it.m.cast || []).forEach(x => names['a:' + x[0]] = x[1]);
+  }
+  const W = {};
+  for (const f in S) W[f] = S[f] / (N[f] + FAM[famOf(f)].k); // shrink: one movie isn't a pattern yet
+  return {mu, W, N, names, list, rated};
+}
+function contentScore(m, P) {
+  const fs = feats(m), tot = {}, by = {};
+  for (const f of fs) { const fam = famOf(f); tot[fam] = (tot[fam] || 0) + 1; const w = P.W[f]; if (w !== undefined) (by[fam] ||= []).push([f, w]); }
+  let s = 0; const parts = [];
+  for (const fam in by) {
+    const sum = by[fam].reduce((a, x) => a + x[1], 0);
+    const v = FAM[fam].w * sum / Math.sqrt(tot[fam]);
+    s += v;
+    const best = by[fam].reduce((a, x) => x[1] > a[1] ? x : a, by[fam][0]);
+    parts.push({fam, v, f: best[0], w: best[1]});
+  }
+  return {s, parts};
+}
+const bayes = (va, vc) => (va * vc + 6.4 * 250) / (vc + 250); // trust ratings with more votes
+function featSet(m) { return new Set(feats(m).filter(f => /^(g|d|col|k|l):/.test(f))); }
+function sim(a, b) {
+  if (a.col && a.col === b.col) return 1;
+  const A = a._fs ||= featSet(a), B = b._fs ||= featSet(b);
+  let i = 0; for (const x of A) if (B.has(x)) i++;
+  return i / (A.size + B.size - i || 1);
+}
+function whyText(p, P, d, c) {
+  if (p.fam === 'seed') return `因为你喜欢《${p.name}》`;
+  if (p.fam === 'd') return `你喜欢的导演 ${P.names[p.f] || ''}`;
+  if (p.fam === 'a') return `你喜欢的演员 ${P.names[p.f] || ''}`;
+  if (p.fam === 'col') return '你看过这个系列';
+  if (p.fam === 'g') return `你偏爱的${GENRES[p.f.slice(2)] || ''}片`;
+  if (p.fam === 'c') return `你爱看的${countryName(p.f.slice(2))}电影`;
+  if (p.fam === 'l') return `你爱看的${LANG_FILM[p.f.slice(2)] || langName(p.f.slice(2))}电影`;
+  if (p.fam === 'k') return '情节类型很合你口味';
+  if (p.fam === 'q') return `口碑高分 ${d.va.toFixed(1)}`;
+  if (p.fam === 'new') return '新片';
+  if (p.fam === 'horror') return '恐怖片之夜 🎃';
+  return '';
+}
+const itemsSig = () => Object.keys(items).length + ':' + Object.values(items).reduce((a, i) => Math.max(a, i.t || 0), 0);
+
+async function computeRecs(onProgress = () => {}) {
+  const P = profile();
+  const cand = new Map();
+  const add = (m, seed, val) => {
+    if (!m || !m.p) return;
+    let c = cand.get(m.id);
+    if (!c) { c = {m, co: 0, seeds: []}; cand.set(m.id, c); }
+    c.co += val;
+    if (seed && val > 0) c.seeds.push([seed, val]);
+  };
+  // 1) "people who liked X also liked" from her favourites (and away from her dislikes)
+  const liked = P.list.filter(i => i._v > 0.3).sort((a, b) => b._v - a._v).slice(0, 12);
+  const disliked = P.list.filter(i => i._v < -0.5).sort((a, b) => a._v - b._v).slice(0, 4);
+  const tasks = [...liked, ...disliked].map(it => async () => {
+    const [r1, r2] = await Promise.all([
+      bilist(`/movie/${it.id}/recommendations`, {page: 1}, 48),
+      it._v > 1 ? bilist(`/movie/${it.id}/similar`, {page: 1}, 48) : Promise.resolve({results: []})
+    ]);
+    r1.results.forEach((m, i) => add(m, it, it._v / (1 + i * 0.07)));
+    r2.results.forEach((m, i) => add(m, it, 0.5 * it._v / (1 + i * 0.07)));
+  });
+  // 2) best movies in her favourite genres / countries
+  const top = fam => Object.entries(P.W).filter(([f, w]) => f.startsWith(fam + ':') && w > 0.05).sort((a, b) => b[1] - a[1]).map(x => x[0].slice(fam.length + 1));
+  const topG = top('g').slice(0, 3), topL = top('l').filter(l => l !== 'en').slice(0, 2);
+  const disc = [];
+  const D = (p) => disc.push(p);
+  D({with_genres: '27', sort_by: 'vote_average.desc', 'vote_count.gte': 800});                                        // horror classics
+  D({with_genres: '27', sort_by: 'popularity.desc', 'primary_release_date.gte': isoDay(daysAgo(730)), 'primary_release_date.lte': TODAY, 'vote_count.gte': 40}); // recent horror
+  topG.forEach(g => D({with_genres: g, sort_by: 'vote_average.desc', 'vote_count.gte': 300}));
+  if (topG[0]) D({with_genres: topG[0], sort_by: 'popularity.desc', 'primary_release_date.gte': isoDay(daysAgo(540)), 'primary_release_date.lte': TODAY, 'vote_count.gte': 30});
+  topL.forEach(l => {
+    D({with_original_language: l, sort_by: 'vote_average.desc', 'vote_count.gte': 80});
+    if (topG[0]) D({with_original_language: l, with_genres: topG[0], sort_by: 'popularity.desc', 'vote_count.gte': 15});
+  });
+  if (P.rated.length < 3) { D({sort_by: 'popularity.desc', 'vote_count.gte': 2000}); D({with_original_language: 'ko', with_genres: '27|53', sort_by: 'vote_average.desc', 'vote_count.gte': 100}); }
+  disc.forEach(p => tasks.push(async () => { const r = await bilist('/discover/movie', {...p, include_adult: false, page: 1}, 24); r.results.forEach(m => add(m, null, 0)); }));
+  tasks.push(async () => { const r = await bilist('/trending/movie/week', {}, 12); r.results.forEach(m => add(m, null, 0)); });
+  await pool(tasks, 6);
+  onProgress(0.35);
+
+  // quick first pass using only what lists tell us, keep the best 70 for a deep look
+  const skip = id => { const it = itemOf(id); return it && (it.s || it.x); };
+  let maxCo = 0; cand.forEach(c => { if (c.co > maxCo) maxCo = c.co; });
+  const quick = [...cand.values()].filter(c => !skip(c.m.id) && c.m.d && c.m.d <= TODAY).map(c => {
+    c.coN = maxCo > 0 ? c.co / maxCo : 0;
+    c.pre = contentScore(c.m, P).s + 0.9 * c.coN + 0.35 * (bayes(c.m.va, c.m.vc) - 6.4);
+    return c;
+  }).sort((a, b) => b.pre - a.pre).slice(0, 70);
+
+  // 2nd pass: full details (director, cast, keywords) for each finalist
+  let done = 0;
+  await pool(quick.map(c => async () => { c.d = await details(c.m.id); onProgress(0.35 + 0.6 * (++done / quick.length)); }), 6);
+
+  const scored = quick.filter(c => c.d).map(c => {
+    const d = c.d, it = itemOf(d.id);
+    const cs = contentScore(d, P);
+    const q = bayes(d.va, d.vc) - 6.4;
+    const fresh = d.d >= isoDay(daysAgo(540)) ? 0.12 : 0;
+    const horror = d.g.includes(27) ? 0.12 : 0;
+    const parts = cs.parts.filter(p => p.v > 0.05);
+    const bestSeed = c.seeds.sort((a, b) => b[1] - a[1])[0];
+    if (bestSeed) parts.push({fam: 'seed', v: 0.9 * c.coN + 0.05, name: bestSeed[0].m.zh || bestSeed[0].m.en});
+    if (q > 0.6) parts.push({fam: 'q', v: 0.35 * q});
+    if (fresh) parts.push({fam: 'new', v: fresh});
+    if (horror) parts.push({fam: 'horror', v: horror * 0.9});
+    const score = cs.s + 0.9 * c.coN + 0.35 * q + 0.07 * Math.log10(1 + d.vc) + fresh + horror - (it && it.w ? 0.25 : 0);
+    parts.sort((a, b) => b.v - a.v);
+    const why = [...new Set(parts.slice(0, 3).map(p => whyText(p, P, d, c)).filter(Boolean))].slice(0, 2);
+    return {d, score, why};
+  });
+  // match % shown to her
+  const ss = scored.map(x => x.score).sort((a, b) => b - a);
+  const hi = ss[0] || 1, lo = ss[ss.length - 1] || 0;
+  // mix it up: don't show 5 sequels of the same thing in a row
+  const picked = [], pool2 = scored.slice();
+  while (picked.length < 40 && pool2.length) {
+    let bi = 0, bv = -1e9;
+    pool2.forEach((x, i) => {
+      const red = picked.length ? Math.max(...picked.map(p => sim(p.d, x.d))) : 0;
+      const v = x.score - 0.45 * red;
+      if (v > bv) { bv = v; bi = i; }
+    });
+    picked.push(pool2.splice(bi, 1)[0]);
+  }
+  const conf = Math.min(1, P.rated.length / 15);
+  const out = picked.map(x => ({id: x.d.id, m: {id: x.d.id, zh: x.d.zh, en: x.d.en, p: x.d.p, d: x.d.d, va: x.d.va, vc: x.d.vc, ov: x.d.ov, g: x.d.g, l: x.d.l},
+    pct: Math.round(72 + 26 * (0.5 + 0.5 * conf) * ((x.score - lo) / ((hi - lo) || 1))), why: x.why}));
+  LS.set('mn_recs', {sig: itemsSig(), at: Date.now(), list: out});
+  onProgress(1);
+  return out;
+}
+
+/* =====================================================================
+   UI: cards
+   ===================================================================== */
+const posterImg = (p, size = 'w342') => p ? `<img loading="lazy" src="${IMG}${size}${esc(p)}" alt="" onload="this.classList.add('ld')">` : '';
+function card(m, extra = '') {
+  const it = itemOf(m.id);
+  const title = m.zh || m.en;
+  return `<button class="card" data-id="${m.id}">
+    <div class="poster">${posterImg(m.p) || `<div class="noimg">${esc(title)}</div>`}
+      ${it && it.s ? `<span class="badge seen">${it.r ? '★' + it.r : '✓ 看过'}</span>` : ''}
+      ${it && it.w ? '<span class="badge heart">💕</span>' : ''}
+      ${extra}
+      ${!extra && m.va && m.vc > 20 ? `<span class="score">${m.va.toFixed(1)}</span>` : ''}
+    </div>
+    <div class="t1">${esc(title)}</div>
+    ${m.zh ? `<div class="t2">${esc(m.en)}</div>` : ''}
+    <div class="t3">${esc((m.d || '').slice(0, 4))}</div>
+  </button>`;
+}
+const skels = n => Array.from({length: n}, () => '<div><div class="skel"></div></div>').join('');
+
+/* =====================================================================
+   HOME: filters + endless poster grid
+   ===================================================================== */
+const CHIPS = [
+  {k: '27', t: '🎃 恐怖', cls: 'horror', type: 'g'},
+  {k: '53', t: '😱 惊悚', type: 'g'},
+  {k: '28', t: '💥 动作', type: 'g'},
+  {k: 'ko', t: '🇰🇷 韩国', type: 'l'},
+  {k: 'zh', t: '🇨🇳 华语', type: 'l'},
+  {k: 'new', t: '🆕 新片', type: 'n'},
+  {k: '9648', t: '🕵️ 悬疑', type: 'g'},
+  {k: '878', t: '👽 科幻', type: 'g'},
+  {k: '35', t: '😂 喜剧', type: 'g'},
+  {k: '10749', t: '💗 爱情', type: 'g'},
+  {k: '16', t: '🧸 动画', type: 'g'},
+  {k: 'ja', t: '🇯🇵 日本', type: 'l'},
+  {k: 'th', t: '🇹🇭 泰国', type: 'l'}
+];
+const home = {sel: new Set(LS.get('mn_sel', ['27'])), sort: LS.get('mn_sort', 'pop'), hideSeen: LS.get('mn_hide', false), page: 0, total: 1, loading: false, gen: 0, shown: new Set()};
+function renderChips() {
+  $('#chips').innerHTML = CHIPS.map(c => `<button class="chip ${c.cls || ''} ${home.sel.has(c.k) ? 'on' : ''}" data-k="${c.k}">${c.t}</button>`).join('');
+  $$('#sortSeg button').forEach(b => b.classList.toggle('on', b.dataset.s === home.sort));
+  $('#hideSeen').classList.toggle('on', home.hideSeen);
+  const names = CHIPS.filter(c => home.sel.has(c.k)).map(c => c.t.replace(/^\S+\s/, ''));
+  $('#gridTitle').innerHTML = (names.length ? esc(names.join(' · ')) : '全部电影') + ` <small>${home.sel.has('new') ? '最近上映' : home.sort === 'top' ? '按评分' : '按热度'}</small>`;
+}
+function homeParams(page) {
+  const p = {include_adult: false, page};
+  const gs = CHIPS.filter(c => c.type === 'g' && home.sel.has(c.k)).map(c => c.k);
+  if (gs.length) p.with_genres = gs.join(',');
+  const langs = [];
+  CHIPS.filter(c => c.type === 'l' && home.sel.has(c.k)).forEach(c => c.k === 'zh' ? langs.push('zh', 'cn') : langs.push(c.k));
+  if (langs.length) p.with_original_language = langs.join('|');
+  if (home.sel.has('new')) {
+    p['primary_release_date.gte'] = isoDay(daysAgo(150)); p['primary_release_date.lte'] = TODAY; p.sort_by = 'popularity.desc';
+  } else if (home.sort === 'top') {
+    p.sort_by = 'vote_average.desc'; p['vote_count.gte'] = langs.length ? 60 : 400;
+  } else {
+    p.sort_by = 'popularity.desc'; p['vote_count.gte'] = langs.length ? 5 : 40; p['primary_release_date.lte'] = TODAY;
+  }
+  return p;
+}
+function resetGrid() {
+  home.gen++; home.page = 0; home.total = 1; home.loading = false; home.shown = new Set();
+  $('#grid').innerHTML = skels(9);
+  LS.set('mn_sel', [...home.sel]); LS.set('mn_sort', home.sort); LS.set('mn_hide', home.hideSeen);
+  renderChips(); loadMore();
+}
+async function loadMore() {
+  if (home.loading || home.page >= home.total || home.page >= 40) return;
+  home.loading = true; const gen = home.gen;
+  try {
+    const r = await bilist('/discover/movie', homeParams(home.page + 1), home.sel.has('new') ? 3 : 8);
+    if (gen !== home.gen) return;
+    if (home.page === 0) $('#grid').innerHTML = '';
+    home.page = r.page; home.total = Math.min(r.total, 500);
+    const list = r.results.filter(m => m.p && !home.shown.has(m.id) && !(home.hideSeen && itemOf(m.id)?.s));
+    list.forEach(m => home.shown.add(m.id));
+    $('#grid').insertAdjacentHTML('beforeend', list.map(m => card(m)).join(''));
+    if (home.page === 1 && !r.results.length) $('#grid').innerHTML = '<div class="empty" style="grid-column:1/-1"><div class="big">🫥</div>没有找到，换个筛选试试</div>';
+  } catch (e) {
+    if (gen === home.gen) $('#grid').innerHTML = errBox(e);
+  } finally {
+    if (gen === home.gen) { home.loading = false; const s = $('#sentinel').getBoundingClientRect(); if (s.top < innerHeight + 600 && home.page < home.total) loadMore(); }
+  }
+}
+function errBox(e) {
+  const bad = String(e).includes('401');
+  return `<div class="empty" style="grid-column:1/-1"><div class="big">😿</div>${bad ? '电影资料钥匙无效，请到「我的」重新设置<br><small>TMDB key not working</small>' : '网络好像有点问题，稍后再试'}</div>`;
+}
+function renderHomeRecs() {
+  const rc = LS.get('mn_recs', null);
+  const list = rc ? rc.list.filter(x => !itemOf(x.id)?.s && !itemOf(x.id)?.x).slice(0, 12) : [];
+  const box = $('#homeRecs');
+  if (list.length >= 4) {
+    box.innerHTML = `<div class="sec" style="padding-bottom:0"><h2 style="margin-bottom:4px">✨ 猜你喜欢 <button class="link" data-go="recs">全部 ›</button></h2></div>
+      <div class="row">${list.map(x => card(x.m, `<span class="match">${x.pct}%</span>`)).join('')}</div>`;
+  } else {
+    const n = Object.values(items).filter(i => i.s && i.r).length;
+    box.innerHTML = `<div class="sec"><button class="taste" style="width:100%;text-align:left;margin:4px 0" data-go="recs">
+      <b>✨ 让我更懂你</b><div class="tiny" style="margin-top:3px">给看过的电影打几颗星（已打 ${n} 部），我就能推荐你会喜欢的电影 ›</div></button></div>`;
+  }
+}
+
+/* search */
+let qT, qGen = 0;
+async function doSearch(q) {
+  const g = ++qGen;
+  $('#homeBrowse').classList.toggle('hidden', !!q);
+  $('#searchRes').classList.toggle('hidden', !q);
+  $('#qx').classList.toggle('hidden', !q);
+  if (!q) return;
+  $('#sgrid').innerHTML = skels(6);
+  try {
+    const [a, b] = await Promise.all([bilist('/search/movie', {query: q, include_adult: false, page: 1}, 1), bilist('/search/movie', {query: q, include_adult: false, page: 2}, 1).catch(() => ({results: []}))]);
+    if (g !== qGen) return;
+    const seen = new Set();
+    const list = [...a.results, ...b.results].filter(m => !seen.has(m.id) && seen.add(m.id))
+      .sort((x, y) => (y.p ? 1 : 0) - (x.p ? 1 : 0) || Math.log(1 + y.vc) + y.pop / 50 - Math.log(1 + x.vc) - x.pop / 50);
+    $('#sgrid').innerHTML = list.length ? list.map(m => card(m)).join('') : '<div class="empty" style="grid-column:1/-1"><div class="big">🔍</div>没有找到这部电影<br><small>试试中文名或英文名</small></div>';
+  } catch (e) { if (g === qGen) $('#sgrid').innerHTML = errBox(e); }
+}
+
+/* =====================================================================
+   FOR YOU
+   ===================================================================== */
+let recsBusy = false;
+function tasteHTML(P, collapsed) {
+  const used = new Set();
+  const top = (fam, n, nameFn, neg) => Object.entries(P.W).filter(([f, w]) => f.startsWith(fam + ':') && (neg ? w < -0.12 : w > 0.08) && (P.N[f] >= (fam === 'g' || fam === 'l' || fam === 'c' ? 1 : 2)))
+    .sort((a, b) => neg ? a[1] - b[1] : b[1] - a[1]).map(([f]) => nameFn(f.slice(fam.length + 1), f)).filter(x => x && !used.has(x) && used.add(x)).slice(0, n).map(x => `<span class="tag ${neg ? 'neg' : ''}">${esc(x)}</span>`).join('');
+  const g = top('g', 5, k => GENRES[k] || k), gn = top('g', 3, k => GENRES[k] || k, true);
+  const l = top('l', 3, k => LANG_FILM[k] || langName(k)), c = top('c', 3, k => countryName(k));
+  const d = top('d', 4, (k, f) => P.names[f] || ''), a = top('a', 6, (k, f) => P.names[f] || '');
+  if (!g && !l && !d && !a) return '';
+  const inner = `
+    ${g ? `<div class="lbl">最爱的类型</div><div class="tags">${g}</div>` : ''}
+    ${l || c ? `<div class="lbl">喜欢的地区</div><div class="tags">${l}${c}</div>` : ''}
+    ${d ? `<div class="lbl">喜欢的导演</div><div class="tags">${d}</div>` : ''}
+    ${a ? `<div class="lbl">喜欢的演员</div><div class="tags">${a}</div>` : ''}
+    ${gn ? `<div class="lbl">不太喜欢</div><div class="tags">${gn}</div>` : ''}`;
+  return collapsed ? `<details class="taste"><summary style="cursor:pointer;font-weight:600">🧠 看看我学到的口味</summary><div style="margin-top:10px">${inner}</div></details>` : `<div class="taste">${inner}</div>`;
+}
+async function renderRecs(force) {
+  const body = $('#recsBody');
+  const ratedN = Object.values(items).filter(i => i.s && i.r).length;
+  const rc = LS.get('mn_recs', null);
+  const P = profile();
+  const head = `<h2>✨ 为你推荐 <button class="link" id="recRefresh">↻ 刷新</button></h2>
+    <div class="tiny" style="margin:-6px 0 8px">根据你打的 ${ratedN} 个评分学习口味，打分越多越准</div>
+    ${tasteHTML(P, true)}
+    ${ratedN < 8 ? `<button class="taste" id="qrOpen" style="width:100%;text-align:left"><b>⭐ 快速打分</b><div class="tiny" style="margin-top:3px">给看过的经典电影打星，几分钟就能让推荐更准 ›</div></button>` : ''}`;
+  const draw = list => {
+    const vis = list.filter(x => !itemOf(x.id)?.s && !itemOf(x.id)?.x);
+    body.innerHTML = head + (vis.length ? vis.map(x => recCard(x)).join('') : '<div class="empty"><div class="big">🍿</div>都看完啦！点刷新再找找</div>');
+  };
+  if (rc && rc.list.length && !force && rc.sig === itemsSig()) { draw(rc.list); return; }
+  if (rc && rc.list.length && !force) draw(rc.list);
+  else body.innerHTML = head + '<div class="spin"></div><div class="tiny" style="text-align:center" id="recProg">正在挑选电影…</div>';
+  if (recsBusy) return;
+  recsBusy = true;
+  try {
+    const list = await computeRecs(p => { const el = $('#recProg'); if (el) el.textContent = `正在挑选电影… ${Math.round(p * 100)}%`; });
+    if (view === 'recs') draw(list);
+    renderHomeRecs();
+  } catch (e) {
+    if (!rc) body.innerHTML = head + errBox(e);
+  } finally { recsBusy = false; }
+}
+function recCard(x) {
+  const m = x.m, it = itemOf(m.id);
+  const gs = (m.g || []).slice(0, 3).map(g => GENRES[g]).filter(Boolean).join(' · ');
+  return `<div class="rec">
+    <button class="card" data-id="${m.id}" style="width:96px;flex:none"><div class="poster">${posterImg(m.p, 'w185')}</div></button>
+    <div class="info">
+      <button class="card" data-id="${m.id}" style="text-align:left">
+        <div class="t1">${esc(m.zh || m.en)}</div>
+        ${m.zh ? `<div class="t2">${esc(m.en)}</div>` : ''}
+        <div class="t3"><span class="pct">${x.pct}% 匹配</span> · ${esc((m.d || '').slice(0, 4))}${gs ? ' · ' + esc(gs) : ''}${m.va ? ' · ⭐' + m.va.toFixed(1) : ''}</div>
+      </button>
+      <div class="why">${x.why.map(w => `<span>${esc(w)}</span>`).join('')}</div>
+      <div class="acts">
+        <button class="mini ${it && it.w ? 'on' : ''}" data-act="tog" data-id="${m.id}">${it && it.w ? '💕 已加' : '🤍 一起看'}</button>
+        <button class="mini" data-act="seenq" data-id="${m.id}">✓ 看过</button>
+        <button class="mini" data-act="nope" data-id="${m.id}">🙅 不要</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* quick-rate: classics she has probably seen */
+async function openQuickRate() {
+  openSheet(`<div class="grab"><i></i></div><button class="close" data-close>✕</button>
+    <div class="sec"><h2>⭐ 快速打分</h2><div class="tiny" style="margin-top:-6px">看过的就点星星，没看过就跳过。打 10 部以上推荐会很准哦</div></div>
+    <div class="qr" id="qrGrid">${skels(6)}</div>`);
+  const reqs = [
+    ['/discover/movie', {with_genres: '27', sort_by: 'vote_count.desc', page: 1}],
+    ['/discover/movie', {sort_by: 'vote_count.desc', page: 1}],
+    ['/discover/movie', {with_original_language: 'ko', sort_by: 'vote_count.desc', page: 1}],
+    ['/discover/movie', {with_original_language: 'zh|cn', sort_by: 'vote_count.desc', page: 1}],
+    ['/discover/movie', {with_genres: '53', sort_by: 'vote_count.desc', page: 1}],
+    ['/discover/movie', {sort_by: 'popularity.desc', 'vote_count.gte': 1500, 'primary_release_date.gte': isoDay(daysAgo(1100)), page: 1}],
+    ['/discover/movie', {with_genres: '27', sort_by: 'vote_count.desc', page: 2}],
+    ['/discover/movie', {sort_by: 'vote_count.desc', page: 2}]
+  ];
+  const lists = await pool(reqs.map(([p, q]) => () => bilist(p, q, 72)), 4);
+  // interleave so it isn't all one kind
+  const seen = new Set(), out = [];
+  for (let i = 0; i < 20; i++) for (const l of lists) { const m = l && l.results[i]; if (m && m.p && !seen.has(m.id) && !itemOf(m.id)) { seen.add(m.id); out.push(m); } }
+  const g = $('#qrGrid'); if (!g) return;
+  g.innerHTML = out.slice(0, 60).map(m => `<div class="item" data-qid="${m.id}">${card(m)}
+    <div class="stars" data-qstars="${m.id}">${[1,2,3,4,5].map(n => `<button data-qr="${n}">★</button>`).join('')}</div>
+    <button class="skip" data-qskip="${m.id}">没看过 ›</button></div>`).join('') || '<div class="empty">都打过分啦 🎉</div>';
+}
+
+/* =====================================================================
+   TOGETHER list
+   ===================================================================== */
+function renderTog() {
+  const list = Object.values(items).filter(i => i.w && i.m).sort((a, b) => (b.wt || b.t) - (a.wt || a.t));
+  const notSeen = list.filter(i => !i.s), seen = list.filter(i => i.s);
+  const mk = i => card({id: +i.id, ...i.m});
+  $('#togBody').innerHTML = `<h2>💕 我们想一起看的 <small>${notSeen.length} 部</small></h2>
+    ${notSeen.length ? `<div class="grid" style="padding:0">${notSeen.map(mk).join('')}</div>` :
+      '<div class="empty"><div class="big">🍿</div>还没有电影<br><small>打开任何电影，点「💕 想一起看」就会出现在这里</small></div>'}
+    ${notSeen.length > 1 ? '<button class="bigbtn" id="pickOne" style="width:100%;margin-top:16px">🎲 今晚看什么？帮我们选一部</button>' : ''}
+    ${seen.length ? `<h2 style="margin-top:26px">✅ 已经一起看过 <small>${seen.length} 部</small></h2><div class="grid" style="padding:0">${seen.map(mk).join('')}</div>` : ''}`;
+  const c = $('#togCnt'); c.textContent = notSeen.length; c.classList.toggle('hidden', !notSeen.length);
+}
+
+/* =====================================================================
+   ME: ratings, taste, settings
+   ===================================================================== */
+let meFilter = 0;
+function renderMe() {
+  const seen = Object.values(items).filter(i => i.s && i.m).sort((a, b) => (b.st || b.t) - (a.st || a.t));
+  const rated = seen.filter(i => i.r);
+  const avg = rated.length ? (rated.reduce((a, i) => a + i.r, 0) / rated.length).toFixed(1) : '–';
+  const shown = meFilter ? seen.filter(i => i.r === meFilter) : seen;
+  $('#meBody').innerHTML = `
+    <div class="stats">
+      <div class="stat"><b>${seen.length}</b><span>看过</span></div>
+      <div class="stat"><b>${avg}</b><span>平均评分</span></div>
+      <div class="stat"><b>${Object.values(items).filter(i => i.w && !i.s).length}</b><span>想一起看</span></div>
+    </div>
+    <h2>🧠 我的口味</h2>
+    ${tasteHTML(profile()) || '<div class="tiny">多打几部电影的分，这里会显示你的口味 ✨</div>'}
+    <h2>⭐ 看过的电影</h2>
+    <div class="chips" style="padding:0 0 10px">${[0,5,4,3,2,1].map(n => `<button class="chip ${meFilter === n ? 'on' : ''}" data-mf="${n}">${n ? '★'.repeat(n) : '全部'}</button>`).join('')}</div>
+    ${shown.length ? `<div class="grid" style="padding:0">${shown.map(i => card({id: +i.id, ...i.m})).join('')}</div>` : '<div class="empty"><div class="big">🎬</div>还没有<br><small>打开电影点「看过」并打星</small></div>'}
+    <h2 style="margin-top:26px">⚙️ 设置</h2>
+    <div class="settings">
+      <div class="li"><span>同步状态</span><span class="tiny">${hasCloud() ? (pending.size ? '等待上传 ' + pending.size : '✅ 两部手机同步') : '只存在这部手机'}</span></div>
+      <button id="syncNow"><span>🔄 立即同步</span><span>›</span></button>
+      <button id="copyShare"><span>🔗 复制分享链接 <small class="tiny">Copy link</small></span><span>›</span></button>
+      <button id="clearCache"><span>🧹 清除缓存（不会删除评分）</span><span>›</span></button>
+      <button id="redoSetup"><span>🛠 重新设置 <small class="tiny">Setup</small></span><span>›</span></button>
+    </div>
+    <div class="tiny" style="text-align:center;margin-top:8px">💡 iPhone：Safari 下方「分享」→「添加到主屏幕」，就像 App 一样</div>`;
+}
+
+/* =====================================================================
+   Movie detail sheet
+   ===================================================================== */
+let sheetId = null;
+function openSheet(html) {
+  const o = $('#overlay'), s = $('#sheet');
+  s.innerHTML = html; s.scrollTop = 0;
+  o.classList.remove('hidden'); s.classList.remove('hidden');
+  requestAnimationFrame(() => { o.classList.add('show'); s.classList.add('show'); });
+  document.body.style.overflow = 'hidden';
+}
+function closeSheet() {
+  const o = $('#overlay'), s = $('#sheet');
+  o.classList.remove('show'); s.classList.remove('show'); sheetId = null;
+  document.body.style.overflow = '';
+  setTimeout(() => { if (!s.classList.contains('show')) { o.classList.add('hidden'); s.classList.add('hidden'); s.innerHTML = ''; } }, 300);
+  if (history.state && history.state.sheet) history.back();
+}
+async function openMovie(id) {
+  id = +id; sheetId = id;
+  if (!(history.state && history.state.sheet)) history.pushState({sheet: 1}, '', location.href);
+  const k = known.get(id) || (itemOf(id) && {id, ...itemOf(id).m});
+  if (k) drawMovie(k, true); else openSheet('<div class="grab"><i></i></div><div class="spin"></div>');
+  try { const d = await details(id); if (sheetId === id) drawMovie(d, false); }
+  catch (e) { if (sheetId === id && !k) $('#sheet').innerHTML = '<button class="close" data-close>✕</button>' + errBox(e); }
+}
+function drawMovie(m, partial) {
+  const it = itemOf(m.id) || {};
+  const html = `<button class="close" data-close aria-label="关闭">✕</button><div class="grab"><i></i></div>
+    <div class="hero">${m.b ? `<img src="${IMG}w780${esc(m.b)}" alt="">` : ''}</div>
+    <div class="dhead">
+      <div class="poster">${posterImg(m.p)}</div>
+      <div class="ttl">
+        <h3>${esc(m.zh || m.en)}</h3>
+        ${m.zh ? `<div class="en">${esc(m.en)}</div>` : ''}
+        <div class="meta">${[(m.d || '').slice(0, 4), m.rt ? m.rt + ' 分钟' : '', (m.c || []).slice(0, 2).map(countryName).join(' / ') || (m.l ? langName(m.l) : '')].filter(Boolean).map(esc).join(' · ')}</div>
+        <div class="meta">${m.vc ? `⭐ <b style="color:var(--gold)">${m.va.toFixed(1)}</b> <span class="tiny">(${m.vc} 人评)</span>` : ''}</div>
+        <div class="gtags">${(m.g || []).map(g => GENRES[g] ? `<span>${GENRES[g]}</span>` : '').join('')}</div>
+      </div>
+    </div>
+    <div class="dbody">
+      <div class="btns">
+        <button class="bigbtn seen ${it.s ? 'on' : ''}" data-act="seen">${it.s ? '✅ 看过了' : '👀 看过'}</button>
+        <button class="bigbtn tog ${it.w ? 'on' : ''}" data-act="tog" data-id="${m.id}">${it.w ? '💕 想一起看' : '🤍 想一起看'}</button>
+      </div>
+      <div class="box">
+        <div class="rate-row"><h4 style="margin:0">${it.r ? '我的评分' : '给它打分'}</h4>
+          <div class="stars" id="dStars">${[1,2,3,4,5].map(n => `<button data-rate="${n}" class="${it.r >= n ? 'on' : ''}" aria-label="${n} 星">★</button>`).join('')}</div>
+        </div>
+        <div class="tiny" style="margin-top:4px">${it.r ? ['', '😖 不喜欢', '😕 一般般', '🙂 还不错', '😍 很喜欢', '🤩 超爱！'][it.r] + ' · 再点一次可取消' : '打分后推荐会更懂你'}</div>
+      </div>
+      ${m.tr ? `<a class="trailer" href="https://www.youtube.com/watch?v=${encodeURIComponent(m.tr)}" target="_blank" rel="noopener">▶ 看预告片</a>` : ''}
+      ${m.tag ? `<div class="tiny" style="font-size:13px;margin:-2px 2px 10px;font-style:italic">“${esc(m.tag)}”</div>` : ''}
+      ${m.ov ? `<div class="box"><h4>剧情简介</h4><div class="ovtxt">${esc(m.ov)}</div></div>` : ''}
+      ${m.cast && m.cast.length ? `<div class="box"><h4>演员 ${m.dir && m.dir.length ? `<span class="tiny">导演：${esc(m.dir.map(x => x[1]).join('、'))}</span>` : ''}</h4>
+        <div class="people">${m.cast.slice(0, 10).map(c => `<div class="person"><div class="ph" style="${c[2] ? `background-image:url('${IMG}w185${esc(c[2])}')` : ''}">${c[2] ? '' : '🙂'}</div><b>${esc(c[1])}</b></div>`).join('')}</div></div>` : ''}
+      ${m.prov && (m.prov.f.length || m.prov.r.length) ? `<div class="box"><h4>在哪里看 <span class="tiny">美国 · JustWatch</span></h4>
+        ${m.prov.f.length ? `<div class="tiny" style="margin-bottom:6px">会员可看</div><div class="prov">${m.prov.f.map(p => `<img src="${IMG}w92${esc(p[1])}" alt="${esc(p[0])}" title="${esc(p[0])}">`).join('')}</div>` : ''}
+        ${m.prov.r.length ? `<div class="tiny" style="margin:10px 0 6px">租借</div><div class="prov">${m.prov.r.map(p => `<img src="${IMG}w92${esc(p[1])}" alt="${esc(p[0])}" title="${esc(p[0])}">`).join('')}</div>` : ''}
+      </div>` : ''}
+      ${partial ? '<div class="spin"></div>' : ''}
+      <div id="simRow"></div>
+    </div>`;
+  if (!$('#sheet').classList.contains('show')) openSheet(html); else { const st = $('#sheet').scrollTop; $('#sheet').innerHTML = html; $('#sheet').scrollTop = st; }
+  if (!partial) loadSimilar(m.id);
+}
+async function loadSimilar(id) {
+  try {
+    const r = await bilist(`/movie/${id}/recommendations`, {page: 1}, 48);
+    const list = r.results.filter(m => m.p).slice(0, 12);
+    const box = $('#simRow');
+    if (box && sheetId === id && list.length) box.innerHTML = `<h4 style="margin:4px 0 8px;color:var(--muted)">相似电影</h4><div class="row" style="padding:0 0 8px">${list.map(m => card(m)).join('')}</div>`;
+  } catch {}
+}
+
+/* actions */
+function act(kind, id, extra) {
+  id = String(id);
+  const it = itemOf(id) || {}, k = known.get(+id);
+  if (kind === 'tog') { const on = !it.w; setItem(id, {w: on, wt: on ? Date.now() : it.wt, x: false}, k); toast(on ? '💕 已加入一起看' : '已从一起看移除'); }
+  if (kind === 'seen') { const on = !it.s; setItem(id, on ? {s: true, st: Date.now(), x: false} : {s: false, r: 0}, k); toast(on ? '✅ 已标记看过，记得打分哦' : '已取消看过'); }
+  if (kind === 'seenq') { setItem(id, {s: true, st: Date.now(), x: false}, k); toast('✅ 已标记看过'); openMovie(id); }
+  if (kind === 'nope') { setItem(id, {x: true}, k); toast('🙅 好的，以后少推荐这类'); }
+  if (kind === 'rate') {
+    const n = +extra;
+    if (it.r === n) { setItem(id, {r: 0}, k); toast('已取消评分'); }
+    else { setItem(id, {r: n, s: true, st: it.s ? (it.st || Date.now()) : Date.now(), x: false}, k); toast(['', '😖', '😕', '🙂', '😍', '🤩'][n] + ' 已打 ' + n + ' 星'); }
+  }
+  if (sheetId === +id) { const d = known.get(+id); if (d) drawMovie(d, false); }
+}
+
+/* =====================================================================
+   Views
+   ===================================================================== */
+let view = 'home';
+function show(v) {
+  view = v;
+  $$('#tabs button').forEach(b => b.classList.toggle('on', b.dataset.v === v));
+  ['home', 'recs', 'tog', 'me'].forEach(x => $('#v-' + x).classList.toggle('hidden', x !== v));
+  $('#searchBox').classList.toggle('hidden', v !== 'home');
+  if (v === 'recs') renderRecs();
+  if (v === 'tog') renderTog();
+  if (v === 'me') renderMe();
+  if (v === 'home') renderHomeRecs();
+  scrollTo(0, 0);
+}
+let refreshT;
+function refreshAll() {
+  clearTimeout(refreshT);
+  refreshT = setTimeout(() => {
+    // update little badges on posters without reloading lists
+    $$('#grid .card, #sgrid .card, .row .card').forEach(el => {
+      const m = known.get(+el.dataset.id); if (!m) return;
+      const pct = el.querySelector('.match');
+      const tmp = document.createElement('div'); tmp.innerHTML = card(m, pct ? pct.outerHTML : '');
+      el.querySelector('.poster').replaceWith(tmp.firstElementChild.querySelector('.poster'));
+    });
+    renderTog();
+    if (view === 'me') renderMe();
+    if (view === 'recs') { const rc = LS.get('mn_recs', null); if (rc) $$('#recsBody .rec').forEach(el => { const id = el.querySelector('[data-id]').dataset.id; const x = rc.list.find(r => String(r.id) === id); if (x) { const i = itemOf(id); if (i && (i.s || i.x)) el.remove(); else { const t = document.createElement('div'); t.innerHTML = recCard(x); el.replaceWith(t.firstElementChild); } } }); }
+  }, 60);
+}
+
+/* =====================================================================
+   Events
+   ===================================================================== */
+document.addEventListener('click', e => {
+  const t = e.target.closest('button,[data-close],.overlay');
+  if (!t) return;
+  if (t.id === 'overlay' || t.hasAttribute('data-close')) return closeSheet();
+  if (t.dataset.qr) {
+    const box = t.closest('[data-qstars]'); const id = box.dataset.qstars;
+    act('rate', id, t.dataset.qr);
+    $$('button', box).forEach(b => b.classList.toggle('on', +b.dataset.qr <= +t.dataset.qr));
+    t.closest('.item').classList.add('done'); return;
+  }
+  if (t.dataset.qskip) { t.closest('.item').remove(); return; }
+  if (t.dataset.act) { e.stopPropagation(); return act(t.dataset.act, t.dataset.id || sheetId); }
+  if (t.dataset.rate) return act('rate', sheetId, t.dataset.rate);
+  if (t.classList.contains('card') && t.dataset.id) return openMovie(t.dataset.id);
+  if (t.dataset.go) return show(t.dataset.go);
+  if (t.dataset.v) return show(t.dataset.v);
+  if (t.dataset.k) {
+    const k = t.dataset.k;
+    home.sel.has(k) ? home.sel.delete(k) : home.sel.add(k);
+    return resetGrid();
+  }
+  if (t.dataset.s) { home.sort = t.dataset.s; return resetGrid(); }
+  if (t.dataset.mf !== undefined) { meFilter = +t.dataset.mf; return renderMe(); }
+  switch (t.id) {
+    case 'hideSeen': home.hideSeen = !home.hideSeen; return resetGrid();
+    case 'qx': $('#q').value = ''; return doSearch('');
+    case 'recRefresh': return renderRecs(true);
+    case 'qrOpen': return openQuickRate();
+    case 'pickOne': {
+      const l = Object.values(items).filter(i => i.w && !i.s);
+      const P = profile();
+      // weighted pick: higher predicted match = more likely, but still a surprise
+      const w = l.map(i => Math.exp(contentScore(i.m, P).s));
+      let r = Math.random() * w.reduce((a, b) => a + b, 0), pick = l[0];
+      for (let i = 0; i < l.length; i++) { r -= w[i]; if (r <= 0) { pick = l[i]; break; } }
+      toast('🎲 今晚就看这部！'); return openMovie(pick.id);
+    }
+    case 'syncNow': pull(true); flush(); return toast('🔄 同步中…');
+    case 'copyShare': return copyText(shareLink()).then(() => toast('🔗 链接已复制'));
+    case 'clearCache': Object.keys(localStorage).filter(k => k.startsWith('c:')).forEach(k => localStorage.removeItem(k)); LS.del('mn_recs'); mem.clear(); return toast('🧹 已清除');
+    case 'redoSetup': return startSetup(true);
+  }
+});
+$('#q').addEventListener('input', e => { clearTimeout(qT); const v = e.target.value.trim(); qT = setTimeout(() => doSearch(v), 380); });
+$('#q').addEventListener('keydown', e => { if (e.key === 'Enter') { e.target.blur(); clearTimeout(qT); doSearch(e.target.value.trim()); } });
+window.addEventListener('popstate', () => { if ($('#sheet').classList.contains('show')) { const s = $('#sheet'), o = $('#overlay'); s.classList.remove('show'); o.classList.remove('show'); sheetId = null; document.body.style.overflow = ''; setTimeout(() => { s.classList.add('hidden'); o.classList.add('hidden'); }, 300); } });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && cfg && cfg.t) { pull(); flush(); } });
+window.addEventListener('online', () => flush());
+async function copyText(s) {
+  try { await navigator.clipboard.writeText(s); }
+  catch { const ta = document.createElement('textarea'); ta.value = s; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); }
+}
+
+/* =====================================================================
+   Setup screen (for the husband)
+   ===================================================================== */
+function parseFirebase(txt) {
+  txt = (txt || '').trim(); if (!txt) return null;
+  const u = txt.match(/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);
+  if (u && !/apiKey/.test(txt)) return {pantry: u[0].toLowerCase()};
+  const g = k => (txt.match(new RegExp('["\']?' + k + '["\']?\\s*:\\s*["\']([^"\']+)["\']')) || [])[1];
+  const k = g('apiKey'), p = g('projectId');
+  return k && p ? {k, p} : undefined;
+}
+function startSetup(again) {
+  $('#app').classList.add('hidden'); $('#setup').classList.remove('hidden');
+  if (again && cfg) { $('#tk').value = cfg.t || ''; if (cfg.p) $('#fb').value = cfg.p; else if (cfg.f) $('#fb').value = `apiKey: "${cfg.f.k}",\nprojectId: "${cfg.f.p}"`; }
+}
+$('#saveSetup').addEventListener('click', async () => {
+  const msg = $('#setupMsg'); const say = (t, ok) => msg.innerHTML = `<div class="msg ${ok ? 'ok' : 'err'}">${t}</div>`;
+  const t = $('#tk').value.trim().replace(/^Bearer\s+/i, '');
+  const f = parseFirebase($('#fb').value);
+  if (!t) return say('Please paste your TMDB key first.');
+  if (f === undefined) return say('That doesn’t look like a Pantry ID. It should look like <b>1a2b3c4d-1234-...</b> (36 letters, numbers and dashes).');
+  say('Testing…', true);
+  try { await tget('/configuration', {}, t); }
+  catch (e) { return say('TMDB key didn’t work (' + esc(e.message) + '). Copy the long “API Read Access Token” from TMDB → Settings → API and try again.'); }
+  const next = {t, c: (cfg && cfg.c) || randCode()};
+  if (f) {
+    if (f.pantry) next.p = f.pantry; else next.f = f;
+    const old = cfg; cfg = next;
+    try {
+      if (next.p) { const l = await ptGet(); if (l === null) await ptPut([]); }
+      else await fsPut('meta/hello', {t: Date.now(), hi: 'movie night'});
+    }
+    catch (e) {
+      cfg = old;
+      const s = String(e.message);
+      if (next.p) return say('TMDB works ✅ but the Pantry ID didn’t (' + esc(s) + '). Check you copied the whole ID from getpantry.cloud.');
+      return say('TMDB works ✅ but Firebase didn’t: ' + (s.includes('403') ? 'permission denied. Make sure you pasted the <b>rules</b> from the instructions and clicked <b>Publish</b>.' : s.includes('404') || s.includes('NOT_FOUND') ? 'database not found. In Firebase, open <b>Firestore Database</b> and click <b>Create database</b>.' : esc(s)));
+    }
+  }
+  cfg = next; LS.set('mn_cfg', cfg);
+  history.replaceState(null, '', location.pathname + '#s=' + b64e(cfg));
+  say(f ? 'All set! ✅ Movies and sharing both work.' : 'Movies work ✅ (no syncing, since Firebase was left empty).', true);
+  $('#shareLink').textContent = shareLink();
+  $('#setupDone').classList.remove('hidden');
+  $('#setupDone').scrollIntoView({behavior: 'smooth'});
+});
+$('#copyLink').addEventListener('click', () => copyText(shareLink()).then(() => { $('#copyLink').textContent = 'Copied ✅'; }));
+$('#openApp').addEventListener('click', () => { location.reload(); });
+
+/* =====================================================================
+   Start
+   ===================================================================== */
+initCfg();
+if (!cfg || !cfg.t) startSetup(false);
+else {
+  $('#app').classList.remove('hidden');
+  items = LS.get('mn_items', {}); pending = new Set(LS.get('mn_pending', []));
+  setSync(hasCloud() ? 'busy' : '');
+  renderChips(); resetGrid(); renderHomeRecs(); renderTog();
+  new IntersectionObserver(es => { if (es[0].isIntersecting) loadMore(); }, {rootMargin: '600px'}).observe($('#sentinel'));
+  pull(true).then(() => { flush(); renderHomeRecs();
+    // warm up recommendations quietly so "为你推荐" is instant
+    const rc = LS.get('mn_recs', null);
+    if ((!rc || rc.sig !== itemsSig()) && Object.values(items).some(i => i.s && i.r)) setTimeout(() => { if (!recsBusy && view !== 'recs') { recsBusy = true; computeRecs().then(renderHomeRecs).catch(() => {}).finally(() => recsBusy = false); } }, 2500);
+  });
+  setInterval(() => { if (!document.hidden) pull(); }, 30000);
+}
+</script>
+</body>
+</html>
