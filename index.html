@@ -473,12 +473,28 @@ async function fsList() {
 }
 /* Pantry (getpantry.cloud): the simple option, needs only a "Pantry ID" */
 const ptBase = () => `https://getpantry.cloud/apiv1/pantry/${encodeURIComponent(cfg.p)}/basket/mn_${cfg.c}`;
-async function ptFetch(method, body) {
-  for (let tries = 0; ; tries++) {
-    const r = await fetch(ptBase(), body ? {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {method});
-    if (r.status === 429 && tries < 4) { await sleep(1500 * (tries + 1)); continue; }
-    return r;
-  }
+// Pantry allows about 1 request per second, so every request waits its turn.
+let ptChain = Promise.resolve(), ptLast = 0;
+function ptFetch(method, body) {
+  const run = async () => {
+    for (let tries = 0; ; tries++) {
+      const wait = ptLast + 1300 - Date.now();
+      if (wait > 0) await sleep(wait);
+      ptLast = Date.now();
+      try {
+        const r = await fetch(ptBase(), body ? {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {method});
+        if (r.status === 429 && tries < 5) { await sleep(2500 * (tries + 1)); continue; }
+        return r;
+      } catch (e) {
+        // when Pantry says "slow down" the browser only sees a failed request, so wait and retry
+        if (tries < 4) { await sleep(2500 * (tries + 1)); continue; }
+        throw e;
+      }
+    }
+  };
+  const p = ptChain.then(run, run);
+  ptChain = p.catch(() => {});
+  return p;
 }
 async function ptGet() {
   const r = await ptFetch('GET');
@@ -492,7 +508,7 @@ async function ptPut(list) {
   const body = {items: {}};
   list.forEach(it => body.items[it.id] = JSON.stringify(it));   // stored as text so nothing gets mixed up
   let r = await ptFetch('PUT', body);
-  if (r.status === 400) { const g = await ptFetch('GET'); if (g.status === 400) r = await ptFetch('POST', body); } // first time: create the box (only if it really doesn't exist)
+  if (r.status === 400 && /not exist/i.test(await r.clone().text())) r = await ptFetch('POST', body); // first time: create the box
   if (!r.ok) throw new Error('save ' + r.status + ' ' + (await r.text()).slice(0, 200));
 }
 const hasCloud = () => !!(cfg && (cfg.f || cfg.p));
@@ -1216,7 +1232,7 @@ $('#saveSetup').addEventListener('click', async () => {
     if (f.pantry) next.p = f.pantry; else next.f = f;
     const old = cfg; cfg = next;
     try {
-      if (next.p) { const l = await ptGet(); if (l === null) await ptPut([]); }
+      if (next.p) { const l = await ptGet(); if (l === null) { const r = await ptFetch('POST', {items: {}}); if (!r.ok) throw new Error('create ' + r.status); } }
       else await fsPut('meta/hello', {t: Date.now(), hi: 'movie night'});
     }
     catch (e) {
@@ -1252,7 +1268,7 @@ else {
     const rc = LS.get('mn_recs', null);
     if ((!rc || rc.sig !== itemsSig()) && Object.values(items).some(i => i.s && i.r)) setTimeout(() => { if (!recsBusy && view !== 'recs') { recsBusy = true; computeRecs().then(renderHomeRecs).catch(() => {}).finally(() => recsBusy = false); } }, 2500);
   });
-  setInterval(() => { if (!document.hidden) pull(); }, 30000);
+  setInterval(() => { if (!document.hidden) pull(); }, cfg.p ? 45000 : 30000);
 }
 </script>
 </body>
