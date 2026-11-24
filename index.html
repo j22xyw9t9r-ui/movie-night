@@ -475,7 +475,7 @@ async function fsList() {
 const ptBase = () => `https://getpantry.cloud/apiv1/pantry/${encodeURIComponent(cfg.p)}/basket/mn_${cfg.c}`;
 async function ptFetch(method, body) {
   for (let tries = 0; ; tries++) {
-    const r = await fetch(ptBase(), {method, headers: {'Content-Type': 'application/json'}, body: body ? JSON.stringify(body) : undefined});
+    const r = await fetch(ptBase(), body ? {method, headers: {'Content-Type': 'application/json'}, body: JSON.stringify(body)} : {method});
     if (r.status === 429 && tries < 4) { await sleep(1500 * (tries + 1)); continue; }
     return r;
   }
@@ -1222,7 +1222,7 @@ $('#saveSetup').addEventListener('click', async () => {
     catch (e) {
       cfg = old;
       const s = String(e.message);
-      if (next.p) return say('TMDB works ✅ but the Pantry ID didn’t (' + esc(s) + '). Check you copied the whole ID from getpantry.cloud.');
+      if (next.p) return say(/load failed|failed to fetch|networkerror/i.test(s) ? 'TMDB works ✅ but your browser blocked Pantry. If you use <b>Brave</b>, tap the 🦁 lion icon and turn <b>Shields off</b> for this site, then try again (or use Safari).' : 'TMDB works ✅ but the Pantry ID didn’t (' + esc(s) + '). Check you copied the whole ID from getpantry.cloud.');
       return say('TMDB works ✅ but Firebase didn’t: ' + (s.includes('403') ? 'permission denied. Make sure you pasted the <b>rules</b> from the instructions and clicked <b>Publish</b>.' : s.includes('404') || s.includes('NOT_FOUND') ? 'database not found. In Firebase, open <b>Firestore Database</b> and click <b>Create database</b>.' : esc(s)));
     }
   }
